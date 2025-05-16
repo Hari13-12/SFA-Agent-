@@ -37,10 +37,10 @@ User Query:
 """
 
     llm = LLMManger()
-    print("State at intent classifier", state)
-    print(state["messages"][-1].content)
+    # print("State at intent classifier", state)
+    # print(state["messages"][-1].content)
     response = llm.invoke(prompt+state["messages"][-1].content)
-    print(response)
+    # print(response)
     response = response.content.replace("```json", "").replace("```", "")
     response = json.loads(response)
     state["intent"] = response.get("intent", "general")
@@ -51,5 +51,5 @@ User Query:
         )   
     if response.get("intent", "general") == "performance_node":
         state["extracted_username"] = response["username"]
-    print("return state at intent classifier", state)
+    # print("return state at intent classifier", state)
     return state

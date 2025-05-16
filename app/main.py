@@ -10,7 +10,6 @@ from app.database.async_db import check_database_connection
 
 
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("startup")
@@ -37,4 +36,3 @@ CORSMiddleware(
 )
 
 app.include_router(chat_route.router)
-

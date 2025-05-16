@@ -14,3 +14,5 @@ class State(TypedDict):
     user_search_results:str
     api_endpoint: str = "https://appstrail-sfa-dev-ed.develop.my.salesforce.com/services/apexrest/APTLDataRequest"
     session_id:str
+    map_cr: str
+    user_display_results: str
