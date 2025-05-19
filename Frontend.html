@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chatbot UI</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+      color: #222;
+    }
+    
+    .loading-indicator {
+      display: flex;
+      align-items: center;
+      margin: 15px 0;
+      align-self: flex-start;
+      padding-left: 15px;
+    }
+    
+    .loading-dots {
+      display: flex;
+    }
+    
+    .loading-dot {
+      width: 8px;
+      height: 8px;
+      margin: 0 3px;
+      background-color: #777;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+    
+    .loading-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .loading-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(0.8);
+        opacity: 0.6;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 1;
+      }
+    }
+    
+    .message iframe {
+      width: 100%;
+      height: 300px;
+      border: none;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+   
+    .folium-map {
+      width: 100%;
+      height: 100%;
+    }
+
+    #chat-container {
+      max-width: 700px;
+      margin: 50px auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+    }
+
+    #messages {
+      height: 400px;
+      overflow-y: auto;
+      padding: 10px;
+      background-color: #f1f1f1;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      margin: 10px 0;
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 15px;
+      font-size: 14px;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    .user {
+      background-color: #4c8bfd;
+      color: white;
+      align-self: flex-end;
+      margin-left: auto;
+      border-bottom-right-radius: 0;
+    }
+
+    .bot {
+      background-color: #e5e5e5;
+      color: #222;
+      align-self: flex-start;
+      margin-right: auto;
+      border-bottom-left-radius: 0;
+    }
+
+    .map-content {
+      width: 100%;
+      margin-top: 5px;
+      align-self: flex-start;
+    }
+
+    #input-form {
+      display: flex;
+      margin-top: 10px;
+    }
+
+    #message-input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      background-color: #ffffff;
+      color: #222;
+      outline: none;
+    }
+
+    #send-btn {
+      padding: 0 16px;
+      margin-left: 10px;
+      border: none;
+      background-color: #4c8bfd;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #send-btn:hover {
+      background-color: #3a7afe;
+    }
+
+    pre, code {
+      background-color: #f0f0f0;
+      color: #333;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      white-space: pre-wrap;
+    }
+
+    pre {
+      overflow-x: auto;
+    }
+
+    h1, h2, h3 {
+      margin-top: 10px;
+      color: #333;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    strong {
+      font-weight: bold;
+    }
+
+    em {
+      font-style: italic;
+    }
+
+    .message table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 10px;
+      background: #fff;
+      color: #222;
+    }
+
+    .message th, .message td {
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    .message th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-container">
+    <div id="messages"></div>
+    <form id="input-form">
+      <input type="text" id="message-input" placeholder="Type your message..." required />
+      <button type="submit" id="send-btn">Send</button>
+    </form>
+  </div>
+
+  <script>
+    const socket = new WebSocket("ws://localhost:8000/chat/ws");
+
+    const accessToken = "00DfK000008J5xC!AQEAQIKBF92UPUcMikJPS8aomF9ChBmfD1y066d8nRQizeruQ9tVLbxB3_kKEsTEMU0CGu3g7eYJMcN2xEO9VVJiTZPd740R";
+    const userId = "999";
+
+    const messagesDiv = document.getElementById("messages");
+    const form = document.getElementById("input-form");
+    const input = document.getElementById("message-input");
+    
+    let loadingIndicator = null;
+
+    function showLoadingIndicator() {
+      loadingIndicator = document.createElement("div");
+      loadingIndicator.className = "loading-indicator";
+      
+      const dotsContainer = document.createElement("div");
+      dotsContainer.className = "loading-dots";
+      
+      for (let i = 0; i < 3; i++) {
+        const dot = document.createElement("div");
+        dot.className = "loading-dot";
+        dotsContainer.appendChild(dot);
+      }
+      
+      loadingIndicator.appendChild(dotsContainer);
+      messagesDiv.appendChild(loadingIndicator);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    function hideLoadingIndicator() {
+      if (loadingIndicator && loadingIndicator.parentNode) {
+        loadingIndicator.parentNode.removeChild(loadingIndicator);
+        loadingIndicator = null;
+      }
+    }
+
+    function addMessage(text, sender) {
+      const msg = document.createElement("div");
+      msg.className = `message ${sender}`;
+
+      if (sender === "bot") {
+        if (text.trim().startsWith("<")) {
+          // HTML message (e.g., contains <table>)
+          msg.innerHTML = text;
+        } else {
+          // Markdown fallback
+          msg.innerHTML = marked.parse(text);
+        }
+      } else {
+        msg.innerText = text;
+      }
+
+      messagesDiv.appendChild(msg);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    socket.onopen = () => {
+      addMessage("Connected to chatbot.", "bot");
+    };
+
+    socket.onmessage = (event) => {
+      // Hide loading indicator on response
+      hideLoadingIndicator();
+      
+      try {
+        const data = JSON.parse(event.data);
+        
+        // Handle regular text content
+        if (data && data.content) {
+          addMessage(data.content, "bot");
+        }
+        
+        // Handle map data
+        if (data && data.map_data) {
+          const mapContainer = document.createElement("div");
+          mapContainer.className = "map-content";
+          mapContainer.innerHTML = data.map_data;
+          messagesDiv.appendChild(mapContainer);
+          messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+      } catch (err) {
+        console.error("Invalid JSON from server:", event.data);
+        // Try to display as plain text if parsing fails
+        addMessage("Error processing response: " + event.data, "bot");
+      }
+    };
+
+    socket.onerror = (err) => {
+      console.error("WebSocket error:", err);
+      hideLoadingIndicator();
+      addMessage("Connection error. Please try again later.", "bot");
+    };
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      const message = input.value.trim();
+      if (message === "") return;
+
+      const payload = {
+        message: message,
+        access_token: accessToken,
+        userid: userId
+      };
+      
+      socket.send(JSON.stringify(payload));
+      addMessage(message, "user");
+      input.value = "";
+      
+      // Show loading indicator after sending message
+      showLoadingIndicator();
+      
+      // In case no response comes after 30 seconds, hide the loading indicator
+      setTimeout(() => {
+        if (loadingIndicator) {
+          hideLoadingIndicator();
+          addMessage("The server is taking longer than expected to respond. Please try again.", "bot");
+        }
+      }, 30000);
+    });
+  </script>
+</body>
+</html>
