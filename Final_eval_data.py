@@ -101,7 +101,7 @@ try:
         input_tokens = []
         output_tokens = []
         total_tokens = []
-
+        price_list = []
         # Loop through all rows
         for i in range(len(event_series)):
             df_0 = event_series[i]
@@ -140,18 +140,25 @@ try:
 
             else:
                 continue
+        for i in range(len(input_tokens)):
+            price = input_tokens[i] * 0.00000005 + output_tokens[i] * 0.00000008
+            formatted_price = format(price, ".8f")  # Always 8 decimal places
+            price_list.append(formatted_price)
+            # price_list.append(input_tokens[i]*0.00000005 + output_tokens[i]*0.00000008)
         print("\nTokens")
         print(input_tokens)
         print(output_tokens)
         print(total_tokens)
+        print(price_list)
         data ={
             "input_tokens": input_tokens,
             "output_tokens": output_tokens,
-            "total_tokens": total_tokens
+            "total_tokens": total_tokens,
+            "price": price_list
         }
 
         data_df = pd.DataFrame(data)
-        combined_df = pd.concat([data_df, final_df], axis=1)
+        combined_df = pd.concat([final_df, data_df], axis=1)
         # final_df.to_csv('final_df_8.csv', index=False)
         output_file = "evaluation_traces_19_05_1.csv"
         combined_df.to_csv(output_file)
