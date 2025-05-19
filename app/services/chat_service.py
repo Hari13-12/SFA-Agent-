@@ -355,8 +355,8 @@ class Chat_service:
             try:
                 # # # print the full event for debugging
                 # # print(f"Processing event: {event}")
-                # if span is not None:
-                    # span.set_attribute("event", str(event)[:1000])  # Truncate for very large events
+                if span is not None:
+                    span.set_attribute("event", str(event)[:1000])  # Truncate for very large events
                 
                 # Handle different event formats
                 
@@ -371,10 +371,10 @@ class Chat_service:
                         latest_message = messages[-1]
                         if isinstance(latest_message, AIMessage) and latest_message.content:
                             # Record AI response for tracing
-                            # if span is not None:
-                            #     span.set_attribute(f"{SpanAttributes.LLM_OUTPUT_MESSAGES}.0.message.role", "assistant")
-                            #     span.set_attribute(f"{SpanAttributes.LLM_OUTPUT_MESSAGES}.0.message.content", latest_message.content)
-                            #     span.set_attribute("node", event.get("current_node", "unknown"))
+                            if span is not None:
+                                span.set_attribute(f"{SpanAttributes.LLM_OUTPUT_MESSAGES}.0.message.role", "assistant")
+                                span.set_attribute(f"{SpanAttributes.LLM_OUTPUT_MESSAGES}.0.message.content", latest_message.content)
+                                span.set_attribute("node", event.get("current_node", "unknown"))
                             
                             await self.process_and_send_message(
                                 latest_message.content,
@@ -384,8 +384,8 @@ class Chat_service:
                 # Format 2: Node-specific content
                 elif isinstance(event, dict) and len(event) == 1:
                     # This might be a node-specific update
-                    # if span is not None:
-                    #     span.add_event("format_2_node_specific", {})
+                    if span is not None:
+                        span.add_event("format_2_node_specific", {})
                     
                     for node_name, content in event.items():
                         if content and isinstance(content, list) and len(content) > 0:
@@ -394,10 +394,10 @@ class Chat_service:
                                 if node_name in ["human_decision_router", "assistant_node", "ask_user_node"]:
                                     if hasattr(item, 'content'):
                                         # Record node response for tracing
-                                        # if span is not None:
-                                        #     span.set_attribute(f"{SpanAttributes.LLM_OUTPUT_MESSAGES}.0.message.role", "assistant")
-                                        #     span.set_attribute(f"{SpanAttributes.LLM_OUTPUT_MESSAGES}.0.message.content", item.content)
-                                        #     span.set_attribute("node", node_name)
+                                        if span is not None:
+                                            span.set_attribute(f"{SpanAttributes.LLM_OUTPUT_MESSAGES}.0.message.role", "assistant")
+                                            span.set_attribute(f"{SpanAttributes.LLM_OUTPUT_MESSAGES}.0.message.content", item.content)
+                                            span.set_attribute("node", node_name)
                                         
                                         await self.process_and_send_message(
                                             item.content,
