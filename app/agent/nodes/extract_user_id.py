@@ -11,7 +11,7 @@ def extract_user_id_with_llm(user_response: str, user_options: str) -> str:
     """
 
     llm_response = llm.invoke(prompt)
-    # print(llm_response.content)
+    # #print(llm_response.content)
     # Ensure the response is a valid user ID
     if llm_response.content:
         return llm_response.content
@@ -43,7 +43,7 @@ def extract_user_id_with_llm(user_response: str, user_options: str) -> str:
 #     """
 #     llm = LLMManger()
 #     llm_response = llm.invoke(prompt)
-#     print("Extracted ID in LLM:\n\n", llm_response.content)
+#     #print("Extracted ID in LLM:\n\n", llm_response.content)
 #     if llm_response:
 #         return llm_response.content
 #     # if llm_response.content:

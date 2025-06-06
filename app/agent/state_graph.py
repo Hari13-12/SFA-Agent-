@@ -8,6 +8,7 @@ from ..agent.nodes.user_condition_node import username_condition_node
 from ..agent.nodes.performance_node import performance_generate_report
 from ..agent.nodes.ask_user_node import ask_user
 from ..agent.nodes.confirm_user_id_node import confirmed_userid_node
+from ..agent.nodes.visits_node import visit_details
 from .assistant import assistant
 
 builder = StateGraph(State)
@@ -20,6 +21,7 @@ builder.add_node("username_condition_node",username_condition_node)
 builder.add_node("performance_node",performance_generate_report)
 builder.add_node("ask_user_node", ask_user)
 builder.add_node("confirmed_userid",confirmed_userid_node)
+builder.add_node("visit_node",visit_details)
 builder.add_node("assistant_node",assistant)
 
 
@@ -31,8 +33,10 @@ builder.add_conditional_edges(
     lambda state:state["next_node"],{
         "assistant": "assistant_node",
         "user_count_node": "user_count_node",
+        "visit_node" : "visit_node"
     }
 )
+builder.add_edge("visit_node","assistant_node")
 builder.add_edge("user_count_node", "username_condition_node")
 
 builder.add_conditional_edges(
@@ -41,6 +45,7 @@ builder.add_conditional_edges(
         "performance_report_node" : "performance_node",
         "assistant_node" : "assistant_node",
         "ask_user" : "ask_user_node"
+       
     }
 )
 builder.add_edge("ask_user_node", "confirmed_userid")

@@ -5,6 +5,12 @@ from langchain_core.messages import AIMessage
 
 def assistant(state):
     llm = LLMManger()
+    if state["intent"] == "visit_details":
+      #  assistant_message = "Say about the visit details"
+      #  response = llm.invoke(assistant_message + state["response"])
+      #  print(response)
+      #  return {"messages":response,"map_cr":None}
+       return {"messages" : AIMessage(content=state["response"]),"map_cr":None}
     if state["intent"] == "performance_node":
           if state["usernamecount"] ==0:
             assistant_message = "Tell the user that there is no user ID found for this name or maybe the user name is incorrect"

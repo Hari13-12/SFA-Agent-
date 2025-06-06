@@ -16,3 +16,4 @@ class State(TypedDict):
     session_id:str
     map_cr: str
     user_display_results: str
+    user_id: str

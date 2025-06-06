@@ -8,7 +8,8 @@ Analyze the user query and determine the intent. If it's a valid business reques
 
 Possible intents:
 1. "performance_node" -> Requires "Account Name".
-2. "general" → For greetings and small talk.
+2. "visit_node" -> For knowing about visits
+3. "general" → For greetings and small talk.
 Output ONLY valid JSON without any extra text or explanations
 Example Inputs and Outputs:
 
@@ -32,15 +33,33 @@ Output:
   "username": "A"
 }
 
+User Query: "What is the next visit?"
+Output:
+{
+  "intent": "visit_details"
+}
+
+User Query: "Which shop I need to go next?"
+Output:
+{
+  "intent": "visit_details"
+}
+
+User Query: "Where I need to go next?"
+Output:
+{
+  "intent": "visit_details"
+}
+
 User Query: ""
 User Query:
 """
 
     llm = LLMManger()
-    # print("State at intent classifier", state)
-    # print(state["messages"][-1].content)
+    #print("State at intent classifier", state)
+    #print(state["messages"][-1].content)
     response = llm.invoke(prompt+state["messages"][-1].content)
-    # print(response)
+    #print(response)
     response = response.content.replace("```json", "").replace("```", "")
     response = json.loads(response)
     state["intent"] = response.get("intent", "general")
@@ -51,5 +70,6 @@ User Query:
         )   
     if response.get("intent", "general") == "performance_node":
         state["extracted_username"] = response["username"]
-    # print("return state at intent classifier", state)
+    #print("return state at intent classifier", state)
+    print("Intent:",state["intent"])
     return state

@@ -3,7 +3,7 @@ from requests import  Session
 
 def username_count_node(state: State):
 
-    # print("Im in username_count_node\n")
+    #print("Im in username_count_node\n")
     s = Session()
     try:
         API_ENDPOINT = "https://appstrail-sfa-dev-ed.develop.my.salesforce.com/services/apexrest/APTLDataRequest"
@@ -13,7 +13,7 @@ def username_count_node(state: State):
             "Authorization": "Bearer " + state["access_token"],
             "Cookie": "BrowserId=GSlXreH9Ee-ZFAW_KW_xKQ; CookieConsentPolicy=0:1; LSKey-c$CookieConsentPolicy=0:1",
         }
-        # print(state["extracted_username"])
+        #print(state["extracted_username"])
         body = {
             "keyword": "User",
             "conditionName": "Name_Filter",
@@ -21,8 +21,8 @@ def username_count_node(state: State):
         }
         response = s.post(API_ENDPOINT, json=body, headers=headers)
         data = response.json()
-        # print("Data from user_count_node")
-        # print(len(data.get("records", [])))
+        #print("Data from user_count_node")
+        #print(len(data.get("records", [])))
         state["usernamecount"] = len(data.get("records", []))
 
         
@@ -30,7 +30,7 @@ def username_count_node(state: State):
         if len(data.get("records", [])) == 0:
             # state["response"] = "User not found"
             state["response"] = "User not found!!! Please provide the correct name."
-            # print("User Count in State ", state["usernamecount"])    ##### usercount state
+            #print("User Count in State ", state["usernamecount"])    ##### usercount state
             return state
 
         if len(data.get("records", [])) > 1:
@@ -101,25 +101,25 @@ def username_count_node(state: State):
             state["user_display_results"] = "\n".join(formatted_output_1)
             # state["response"] = "Multiple users found. Please provide the correct name."
             # state["usernamecount"] = 2
-            # print("State Multiple ID's : ", state["user_search_results"])
-            # print("User Count in State ", state["usernamecount"])    ##### usercount state
-            # print("User display results\n\n",state["user_display_results"])
+            #print("State Multiple ID's : ", state["user_search_results"])
+            #print("User Count in State ", state["usernamecount"])    ##### usercount state
+            #print("User display results\n\n",state["user_display_results"])
             return state
             
         if len(data.get("records", [])) == 1:
             for user in data.get("records", []):
-                # print("User in user_count_node:",user)
+                #print("User in user_count_node:",user)
                 if user.get("parentRecord", {}).get("Name") == state["extracted_username"]:
                     user_id = user["parentRecord"].get("Id")
                     state["resolved_user_id"] = user_id
-                    # print("\nFor single User\n")
-                    # print("User Count in State ", state["usernamecount"])    ##### usercount state
-                    # print("State in resolve id",state)
+                    #print("\nFor single User\n")
+                    #print("User Count in State ", state["usernamecount"])    ##### usercount state
+                    #print("State in resolve id",state)
                     return state
                 else:
                     state["response"] = "User not found!!! Please provide the correct name."
                     state["usernamecount"] = 0
-                    # print("User Count in State ", state["usernamecount"])    ##### usercount state
+                    #print("User Count in State ", state["usernamecount"])    ##### usercount state
                     return state
         # if user_id is None:
         #     state["response"] = "User not found!!! Please provide the correct name."
